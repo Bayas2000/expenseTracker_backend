@@ -111,6 +111,7 @@ module.exports.getAllData = async (mainFilter) => {
                                 monthlyTarget:
                                     "$$member.monthlyTarget",
                                 createdAt: "$$member.createdAt",
+                                joinedDate : "$$member.joinedDate",
                                 createdBy: "$$member.createdBy"
                             }
                         }

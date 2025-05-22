@@ -45,6 +45,9 @@ const groupMemberSchema = new mongoose.Schema({
         type: Date,
         default: Date.now
     },
+    joinedDate : {
+        type : Date
+    },
     updatedAt: {
         type: Date
     }
