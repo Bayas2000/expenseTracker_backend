@@ -8,6 +8,7 @@ router.post('/inviteMembers', auth.checkAuth, validate.inviteMembers, controller
 router.post('/inviteResponse', auth.checkAuth, validate.inviteResponse, controller.respondToGroupInvite)
 router.get('/get-all-data', auth.checkAuth, validate.getAllData, controller.getAllData)
 router.get('/get-notifications', auth.checkAuth, validate.getAllData, controller.getNotification)
+router.get('/member-transaction-details', auth.checkAuth, validate.memberAmountDetails, controller.memberAmountDetails)
 router.put('/update', auth.checkAuth, validate.update, controller.update)
 
 module.exports = router

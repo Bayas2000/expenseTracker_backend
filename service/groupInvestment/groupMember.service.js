@@ -206,6 +206,85 @@ module.exports.getAllData = async (mainFilter) => {
         return { success: false, message: 'Internal server error', error };
     }
 }
+
+module.exports.amountDetails = async (mainFilter) => {
+    try {
+        console.log("mainFilter", mainFilter)
+        const aggregateQuery = [
+            { $match: mainFilter },
+            { $sort: { createdAt: -1 } },
+            {
+                $lookup: {
+                    from: "users",
+                    localField: "userId",
+                    foreignField: "_id",
+                    as: "userDetails"
+                }
+            },
+            {
+                $lookup: {
+                    from: "group_transactions",
+                    localField: "_id",
+                    foreignField: "memberId",
+                    as: "groupTransactionDetails"
+                }
+            },
+            {
+                $addFields: {
+                    monthWise: {
+                        $map: {
+                            input: "$groupTransactionDetails",
+                            as: "trans",
+                            in: {
+                                month: {
+                                    $arrayElemAt: [
+                                        [
+                                            "",
+                                            "January",
+                                            "February",
+                                            "March",
+                                            "April",
+                                            "May",
+                                            "June",
+                                            "July",
+                                            "August",
+                                            "September",
+                                            "October",
+                                            "November",
+                                            "December"
+                                        ],
+                                        {
+                                            $month: "$$trans.investmentDate"
+                                        }
+                                    ]
+                                },
+                                year: {
+                                    $year: "$$trans.investmentDate"
+                                },
+                                amount: "$$trans.amount",
+                                investmentDate:
+                                    "$$trans.investmentDate"
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                $project: {
+                    memberName: { $first: "$userDetails.userName" },
+                    monthWise: "$monthWise"
+                }
+            }
+        ]
+        const queryResult = await groupMemberModel.aggregate(aggregateQuery)
+        return queryResult
+    } catch (error) {
+        console.error('Service File Error:', error);
+        return { success: false, message: 'Internal server error', error };
+    }
+}
+
+
 module.exports.getNotifications = async (req, mainFilter) => {
     const userId = req.userId
     try {

@@ -64,6 +64,14 @@ module.exports.getAllData = async (mainFilter) => {
                 }
             },
             {
+                $lookup: {
+                    from: "group_transactions",
+                    localField: "groupMemberDetails._id",
+                    foreignField: "memberId",
+                    as: "groupTransactionDetails"
+                }
+            },
+            {
                 $addFields: {
                     acceptMembers: {
                         $filter: {
@@ -110,8 +118,21 @@ module.exports.getAllData = async (mainFilter) => {
                                 inviteStatus: "$$member.inviteStatus",
                                 monthlyTarget:
                                     "$$member.monthlyTarget",
+                                memberAmount: {
+                                    $reduce: {
+                                        input: {
+                                            $filter: {
+                                                input: "$groupTransactionDetails",
+                                                as: "trans",
+                                                cond: { $eq: ["$$trans.memberId", "$$member._id"] }
+                                            }
+                                        },
+                                        initialValue: 0,
+                                        in: { $add: ["$$value", "$$this.amount"] }
+                                    }
+                                },
                                 createdAt: "$$member.createdAt",
-                                joinedDate : "$$member.joinedDate",
+                                joinedDate: "$$member.joinedDate",
                                 createdBy: "$$member.createdBy"
                             }
                         }
@@ -121,6 +142,7 @@ module.exports.getAllData = async (mainFilter) => {
             {
                 $project: {
                     groupMemberDetails: 0,
+                    groupTransactionDetails: 0,
                     groupUserDetails: 0,
                     acceptMembers: 0,
                     existingInvestAmount: 0

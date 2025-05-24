@@ -78,6 +78,22 @@ module.exports.getAllData = async (req, res) => {
     }
 }
 
+module.exports.memberAmountDetails = async (req, res) => {
+    try {
+        const { groupId } = req.query
+        const userId = req.userId
+        const mainFilter = {
+            ...(userId ? { userId: new ObjectId(userId) } : {}),
+            ...(groupId ? { groupId: new ObjectId(groupId) } : {})
+        }
+        const data = await groupMemberService.amountDetails(mainFilter)
+        response.successResponse(res, 'Member transactions Data List Fetch SuccesFully', data)
+    } catch (error) {
+        console.error('Controller GetAllData Error:', error);
+        response.catchError(res, 'Catch Error In getAllData', error.message)
+    }
+}
+
 module.exports.getNotification = async (req, res) => {
     try {
         const { status } = req.query
