@@ -31,7 +31,6 @@ module.exports.inviteMembers = async (req, res) => {
         response.catchError(res, 'Catch Error In Invite', error.message);
     }
 };
-
 module.exports.respondToGroupInvite = async (req, res) => {
     try {
         const { groupId, inviteResponse } = req.body;
@@ -60,10 +59,6 @@ module.exports.respondToGroupInvite = async (req, res) => {
         response.catchError(res, 'Catch Error In Invite', error.message);
     }
 };
-
-
-
-
 module.exports.getAllData = async (req, res) => {
     try {
         const { status } = req.query
@@ -77,7 +72,6 @@ module.exports.getAllData = async (req, res) => {
         response.catchError(res, 'Catch Error In getAllData', error.message)
     }
 }
-
 module.exports.memberAmountDetails = async (req, res) => {
     try {
         const { groupId } = req.query
@@ -93,7 +87,6 @@ module.exports.memberAmountDetails = async (req, res) => {
         response.catchError(res, 'Catch Error In getAllData', error.message)
     }
 }
-
 module.exports.getNotification = async (req, res) => {
     try {
         const { status } = req.query
@@ -110,7 +103,22 @@ module.exports.getNotification = async (req, res) => {
         response.catchError(res, 'Catch Error In getAllData', error.message)
     }
 }
+module.exports.groupOverview = async (req, res) => {
+    try {
+        const { status, groupId } = req.query
+        const userId = req.userId
+        const mainFilter = {
+            ...({ status: status ? status : { $ne: 'Deleted' } }),
+            ...(groupId ? { groupId: new ObjectId(groupId) } : {})
+        }
+        const data = await groupMemberService.groupOverview(mainFilter)
+        response.successResponse(res, 'Group Overview Fetch SuccesFully', data)
 
+    } catch (error) {
+        console.error('Controller GetAllData Error:', error);
+        response.catchError(res, 'Catch Error In getAllData', error.message)
+    }
+}
 module.exports.update = async (req, res) => {
     try {
         const { _id, ...updateData } = req.body
@@ -124,7 +132,6 @@ module.exports.update = async (req, res) => {
         response.catchError(res, 'Catch Error In update', error.message)
     }
 }
-
 module.exports.delete = async (req, res) => {
     try {
         const { _id, status } = req.body

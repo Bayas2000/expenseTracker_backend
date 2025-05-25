@@ -11,7 +11,9 @@ const createMany = Joi.array().items(Joi.object({
 
 
 const getAllData = Joi.object({
-    status: Joi.string().valid('Active', 'InActive').optional()
+    status: Joi.string().valid('Active', 'InActive').optional(),
+    month: Joi.string().valid('January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December').optional(),
+    year: Joi.number().min(2000).max(2100).optional()
 })
 
 const update = Joi.object({

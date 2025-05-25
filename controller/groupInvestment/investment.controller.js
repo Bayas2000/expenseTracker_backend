@@ -17,12 +17,24 @@ module.exports.createMany = async (req, res) => {
 
 module.exports.getAllData = async (req, res) => {
     try {
-        const { status } = req.query
+        const { status, month, year } = req.query
+
+        let startDate, endDate
+        if (month && year) {
+            const monthIndex = new Date(`${month} 1, ${year}`).getMonth();
+            console.log("monthIndex", monthIndex)
+            startDate = new Date(year, monthIndex, 1);
+            console.log("startDate", startDate)
+            endDate = new Date(year, monthIndex + 1, 1);
+            console.log("endDate", endDate)
+
+        }
         const mainFilter = {
-            ...({ status: status ? status : { $ne: 'Deleted' } })
+            ...({ status: status ? status : { $ne: 'Deleted' } }),
+            ...(month && year ? { investmentDate: { $gte: startDate, $lt: endDate } } : {})
         }
         const data = await investmentService.getAllData(mainFilter)
-        response.successResponse(res, 'Group Member Data List Fetch SuccesFully', data)
+        response.successResponse(res, 'Group Transactions Data List Fetch SuccesFully', data)
     } catch (error) {
         console.error('Controller GetAllData Error:', error);
         response.catchError(res, 'Catch Error In getAllData', error.message)

@@ -157,6 +157,48 @@ module.exports.getAllData = async (mainFilter) => {
     }
 }
 
+module.exports.dashBoard = async (mainFilter) => {
+    try {
+        const aggregateQuery = [
+            { $match: mainFilter },
+            {
+                $lookup: {
+                    from: "group_transactions",
+                    localField: "_id",
+                    foreignField: "memberId",
+                    as: "transactionsDetails"
+                }
+            },
+            {
+                $addFields: {
+                    totalAmountSpending: {
+                        $sum: "$transactionsDetails.amount"
+                    }
+                }
+            },
+            {
+                $group: {
+                    _id: "$userId",
+                    memberName: { $first: "$memberName" },
+                    totalGroups: { $addToSet: "$groupId" },
+                    totalAmountSpending: { $sum: "$totalAmountSpending" }
+                }
+            },
+            {
+                $addFields: {
+                    totalGroups: { $size: "$totalGroups" }
+                }
+            }
+        ]
+
+        const queryResult = await groupMemberModel.aggregate(aggregateQuery)
+        return queryResult
+    } catch (error) {
+        console.error('Service File Error:', error);
+        return { success: false, message: 'Internal server error', error };
+    }
+}
+
 module.exports.update = async (req, _id, updateData) => {
     try {
         const afterUpdate = await groupModel.findByIdAndUpdate(_id, {

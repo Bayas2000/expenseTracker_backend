@@ -6,6 +6,7 @@ const auth = require('../middleware/auth')
 
 router.post('/create', auth.checkAuth, validate.create, controller.create)
 router.get('/get-all-data', auth.checkAuth, validate.getAllData, controller.getAllData)
+router.get('/dashboard', auth.checkAuth, controller.dashBoard)
 router.put('/update', auth.checkAuth, validate.update, controller.update)
 
 module.exports = router

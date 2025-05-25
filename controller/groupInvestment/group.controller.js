@@ -39,6 +39,20 @@ module.exports.getAllData = async (req, res) => {
     }
 }
 
+module.exports.dashBoard = async (req, res) => {
+    try {
+        const userId = req.userId
+        const mainFilter = {
+
+        }
+        const data = await groupService.dashBoard(mainFilter)
+        response.successResponse(res, 'Group OverView Fetch SuccesFully', data)
+    } catch (error) {
+        console.error('Controller groupOverview Error:', error);
+        response.catchError(res, 'Catch Error In groupOverview', error.message)
+    }
+}
+
 module.exports.update = async (req, res) => {
     try {
         const { _id, ...updateData } = req.body
