@@ -3,6 +3,7 @@ const mongoose = require('mongoose')
 const { Types } = mongoose
 const { ObjectId } = Types
 
+
 const groupMemberSchema = new mongoose.Schema({
     groupId: {
         type: ObjectId,
@@ -23,9 +24,6 @@ const groupMemberSchema = new mongoose.Schema({
         enum: ['Admin', 'Member'],
         required: true
     },
-    monthlyTarget: {
-        type: Number
-    },
     inviteStatus: {
         type: String,
         enum: ['Pending', 'Accepted', 'Rejected'],
@@ -45,8 +43,8 @@ const groupMemberSchema = new mongoose.Schema({
         type: Date,
         default: Date.now
     },
-    joinedDate : {
-        type : Date
+    joinedDate: {
+        type: Date
     },
     updatedAt: {
         type: Date
@@ -57,8 +55,16 @@ const groupMemberSchema = new mongoose.Schema({
         versionKey: false
     }
 )
-    .index({ userName: 1 })
-    .index({ emailId: 1 })
+groupMemberSchema.virtual('currentMonthlyTarget').get(function () {
+    if (!this.monthlyTargetHistory || this.monthlyTargetHistory.length === 0) {
+        return this.monthlyTarget;
+    }
+    const latest = this.monthlyTargetHistory[this.monthlyTargetHistory.length - 1];
+    return latest.targetAmount;
+});
+
+groupMemberSchema.index({ memberName: 1 })
+groupMemberSchema.index({ emailId: 1 })
 
 
 module.exports = mongoose.model('group_members', groupMemberSchema)

@@ -67,6 +67,19 @@ module.exports.update = async (req, res) => {
     }
 }
 
+module.exports.updateMonthlyTarget = async (req, res) => {
+    try {
+        const { _id, newTarget } = req.body
+        const result = await groupService.updateMonthlyTarget(req, _id, newTarget)
+        if (result) {
+            response.successResponse(res, 'Monthly Target Updated SuccesFully')
+        } else return response.errorResponse(res, 'Monthly Target Update Failed')
+    } catch (error) {
+        console.error('Controller update Error:', error);
+        response.catchError(res, 'Catch Error In update', error.message)
+    }
+}
+
 module.exports.delete = async (req, res) => {
     try {
         const { _id, status } = req.body

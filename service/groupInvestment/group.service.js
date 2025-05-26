@@ -6,8 +6,6 @@ module.exports.create = async (req, inputData) => {
     try {
         const createdBy = req.userId;
         const user = await userModel.findOne({ _id: createdBy }).select('userName')
-        console.log(user)
-
         const newGroup = new groupModel({
             ...inputData,
             createdBy,
@@ -20,7 +18,6 @@ module.exports.create = async (req, inputData) => {
             userId: createdBy,
             memberName: user.userName,
             role: 'Admin',
-            monthlyTarget: inputData.monthlyTarget || 0,
             inviteStatus: 'Accepted',
             status: 'Active',
             createdBy,
@@ -107,6 +104,186 @@ module.exports.getAllData = async (mainFilter) => {
             },
             {
                 $addFields: {
+                    currentMonth: {
+                        $toInt: {
+                            $dateToString: {
+                                date: new Date(),
+                                format: "%m"
+                            }
+                        }
+                    },
+                    currentYear: {
+                        $year: new Date()
+                    }
+                }
+            },
+            {
+                $addFields: {
+                    resolvedMonthlyTarget: {
+                        $let: {
+                            vars: {
+                                matchingHistory: {
+                                    $filter: {
+                                        input: "$monthlyTargetHistory",
+                                        as: "entry",
+                                        cond: {
+                                            $and: [
+                                                {
+                                                    $eq: [
+                                                        {
+                                                            $toInt: {
+                                                                $switch: {
+                                                                    branches: [
+                                                                        {
+                                                                            case: {
+                                                                                $eq: [
+                                                                                    "$$entry.month",
+                                                                                    "January"
+                                                                                ]
+                                                                            },
+                                                                            then: 1
+                                                                        },
+                                                                        {
+                                                                            case: {
+                                                                                $eq: [
+                                                                                    "$$entry.month",
+                                                                                    "February"
+                                                                                ]
+                                                                            },
+                                                                            then: 2
+                                                                        },
+                                                                        {
+                                                                            case: {
+                                                                                $eq: [
+                                                                                    "$$entry.month",
+                                                                                    "March"
+                                                                                ]
+                                                                            },
+                                                                            then: 3
+                                                                        },
+                                                                        {
+                                                                            case: {
+                                                                                $eq: [
+                                                                                    "$$entry.month",
+                                                                                    "April"
+                                                                                ]
+                                                                            },
+                                                                            then: 4
+                                                                        },
+                                                                        {
+                                                                            case: {
+                                                                                $eq: [
+                                                                                    "$$entry.month",
+                                                                                    "May"
+                                                                                ]
+                                                                            },
+                                                                            then: 5
+                                                                        },
+                                                                        {
+                                                                            case: {
+                                                                                $eq: [
+                                                                                    "$$entry.month",
+                                                                                    "June"
+                                                                                ]
+                                                                            },
+                                                                            then: 6
+                                                                        },
+                                                                        {
+                                                                            case: {
+                                                                                $eq: [
+                                                                                    "$$entry.month",
+                                                                                    "July"
+                                                                                ]
+                                                                            },
+                                                                            then: 7
+                                                                        },
+                                                                        {
+                                                                            case: {
+                                                                                $eq: [
+                                                                                    "$$entry.month",
+                                                                                    "August"
+                                                                                ]
+                                                                            },
+                                                                            then: 8
+                                                                        },
+                                                                        {
+                                                                            case: {
+                                                                                $eq: [
+                                                                                    "$$entry.month",
+                                                                                    "September"
+                                                                                ]
+                                                                            },
+                                                                            then: 9
+                                                                        },
+                                                                        {
+                                                                            case: {
+                                                                                $eq: [
+                                                                                    "$$entry.month",
+                                                                                    "October"
+                                                                                ]
+                                                                            },
+                                                                            then: 10
+                                                                        },
+                                                                        {
+                                                                            case: {
+                                                                                $eq: [
+                                                                                    "$$entry.month",
+                                                                                    "November"
+                                                                                ]
+                                                                            },
+                                                                            then: 11
+                                                                        },
+                                                                        {
+                                                                            case: {
+                                                                                $eq: [
+                                                                                    "$$entry.month",
+                                                                                    "December"
+                                                                                ]
+                                                                            },
+                                                                            then: 12
+                                                                        }
+                                                                    ],
+                                                                    default: 0
+                                                                }
+                                                            }
+                                                        },
+                                                        "$currentMonth"
+                                                    ]
+                                                },
+                                                {
+                                                    $eq: [
+                                                        "$$entry.year",
+                                                        "$currentYear"
+                                                    ]
+                                                }
+                                            ]
+                                        }
+                                    }
+                                }
+                            },
+                            in: {
+                                $cond: [
+                                    {
+                                        $gt: [
+                                            { $size: "$$matchingHistory" },
+                                            0
+                                        ]
+                                    },
+                                    {
+                                        $arrayElemAt: [
+                                            "$$matchingHistory.targetAmount",
+                                            0
+                                        ]
+                                    },
+                                    "$monthlyTarget"
+                                ]
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                $addFields: {
                     groupDetails: {
                         $map: {
                             input: "$acceptMembers",
@@ -116,8 +293,7 @@ module.exports.getAllData = async (mainFilter) => {
                                 memberName: "$$member.memberName",
                                 role: "$$member.role",
                                 inviteStatus: "$$member.inviteStatus",
-                                monthlyTarget:
-                                    "$$member.monthlyTarget",
+                                monthlyTarget: "$resolvedMonthlyTarget",
                                 memberAmount: {
                                     $reduce: {
                                         input: {
@@ -145,7 +321,8 @@ module.exports.getAllData = async (mainFilter) => {
                     groupTransactionDetails: 0,
                     groupUserDetails: 0,
                     acceptMembers: 0,
-                    existingInvestAmount: 0
+                    existingInvestAmount: 0,
+                    resolvedMonthlyTarget: 0
                 }
             }
         ]
@@ -209,6 +386,38 @@ module.exports.update = async (req, _id, updateData) => {
         return afterUpdate
 
 
+    } catch (error) {
+        console.error('Service File Error:', error);
+        return { success: false, message: 'Internal server error', error };
+    }
+}
+
+module.exports.updateMonthlyTarget = async (req, _id, newTarget) => {
+    try {
+        const now = new Date()
+        const month = now.toLocaleString('default', { month: 'long' });
+        const year = now.getFullYear();
+        const group = await groupModel.findById(_id)
+        if (!group) return { success: false, message: 'Group not found' };
+        const isDuplicate = group.monthlyTargetHistory?.some(entry => entry.month === month && entry.year === year && entry.monthlyTarget === newTarget)
+        if (isDuplicate) {
+            return { success: 'warning', message: `Monthly target for ${month} ${year} already Updated` };
+        }
+        const targetEntry = {
+            month,
+            year,
+            targetAmount: newTarget,
+            updatedAt: now
+        };
+
+        const result = await groupModel.updateOne(
+            { _id },
+            {
+                $set: { monthlyTarget: newTarget },
+                $push: { monthlyTargetHistory: targetEntry }
+            }
+        )
+        return result
     } catch (error) {
         console.error('Service File Error:', error);
         return { success: false, message: 'Internal server error', error };

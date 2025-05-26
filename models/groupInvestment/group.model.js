@@ -3,6 +3,26 @@ const mongoose = require('mongoose')
 const { Types } = mongoose
 const { ObjectId } = Types
 
+const monthlyTargetSchema = new mongoose.Schema({
+    month: {
+        type: String,
+        required: true,
+    },
+    year: {
+        type: Number,
+        required: true,
+    },
+    targetAmount: {
+        type: Number,
+        required: true,
+    },
+    updatedAt: {
+        type: Date,
+        default: Date.now
+    }
+}, { _id: false });
+
+
 const existInvestmentSchema = new mongoose.Schema({
     investmentType: {
         type: String,
@@ -34,6 +54,10 @@ const groupInvestmentSchema = new mongoose.Schema({
     },
     monthlyTarget: {
         type: Number
+    },
+    monthlyTargetHistory: {
+        type: [monthlyTargetSchema],
+        default: []
     },
     status: {
         type: String,

@@ -20,11 +20,6 @@ module.exports.inviteMembers = async (req, inputData) => {
     try {
         const { groupId, memberIds } = inputData;
         const createdBy = req.userId;
-        const groups = await groupModel.find({ _id: { $in: groupId } }).select('monthlyTarget')
-        const groupMap = {}
-        groups.forEach(group => {
-            groupMap[group._id.toString()] = group.monthlyTarget
-        })
         const users = await userModel.find({ _id: { $in: memberIds } }).select('userName');
         const userMap = {};
         users.forEach(user => {
@@ -38,7 +33,6 @@ module.exports.inviteMembers = async (req, inputData) => {
                 userId: memberId,
                 memberName: userMap[memberId] || 'Unknown',
                 role: 'Member',
-                monthlyTarget: groupMap[groupId] || 0,
                 inviteStatus: 'Pending',
                 status: 'Inactive',
                 createdBy,

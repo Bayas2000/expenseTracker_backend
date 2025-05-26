@@ -33,6 +33,11 @@ const update = Joi.object({
     members: Joi.string().optional(),
 });
 
+const updateMonthlyTarget = Joi.object({
+    _id: Joi.string().length(24).required(),
+    newTarget: Joi.number().required()
+});
+
 const updateStatus = Joi.object({
     _id: Joi.string().length(24).required(),
     status: Joi.string().valid('Active', 'Inactive', 'Delete')
@@ -44,5 +49,6 @@ module.exports = {
     create: validateBody(create),
     getAllData: validateQuery(getAllData),
     update: validateBody(update),
+    updateMonthlyTarget: validateBody(updateMonthlyTarget),
     updateStatus: validateBody(updateStatus)
 };
