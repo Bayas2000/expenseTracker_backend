@@ -70,11 +70,18 @@ module.exports.getAllData = async (mainFilter) => {
             },
             {
                 $addFields: {
+                    groupTransactionDetails: { $ifNull: ["$groupTransactionDetails", []] }
+                }
+            },
+            {
+                $addFields: {
                     acceptMembers: {
                         $filter: {
-                            input: "$groupMemberDetails",
+                            input: { $ifNull: ["$groupMemberDetails", []] },
                             as: "member",
-                            cond: { $eq: ["$$member.inviteStatus", "Accepted"] }
+                            cond: {
+                                $eq: ["$$member.inviteStatus", "Accepted"]
+                            }
                         }
                     }
                 }
@@ -99,7 +106,7 @@ module.exports.getAllData = async (mainFilter) => {
             },
             {
                 $addFields: {
-                    totalMembers: { $size: "$acceptMembers" }
+                    totalMembers: { $size: { $ifNull: ["$acceptMembers", []] } }
                 }
             },
             {
