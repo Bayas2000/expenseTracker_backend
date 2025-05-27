@@ -6,8 +6,19 @@ module.exports.create = async (req, inputData) => {
     try {
         const createdBy = req.userId;
         const user = await userModel.findOne({ _id: createdBy }).select('userName')
+        const now = new Date();
+        const month = now.toLocaleString('default', { month: 'long' });
+        const year = now.getFullYear();
+        const monthlyTargetHistoryEntry = {
+            month,
+            year,
+            targetAmount: inputData.monthlyTarget,
+            updatedAt: now
+        };
+
         const newGroup = new groupModel({
             ...inputData,
+            monthlyTargetHistory: [monthlyTargetHistoryEntry],
             createdBy,
             createdAt: new Date()
         });
@@ -401,35 +412,43 @@ module.exports.update = async (req, _id, updateData) => {
 
 module.exports.updateMonthlyTarget = async (req, _id, newTarget) => {
     try {
-        const now = new Date()
+        const now = new Date();
         const month = now.toLocaleString('default', { month: 'long' });
         const year = now.getFullYear();
-        const group = await groupModel.findById(_id)
-        if (!group) return { success: false, message: 'Group not found' };
-        const isDuplicate = group.monthlyTargetHistory?.some(entry => entry.month === month && entry.year === year && entry.monthlyTarget === newTarget)
-        if (isDuplicate) {
-            return { success: 'warning', message: `Monthly target for ${month} ${year} already Updated` };
-        }
-        const targetEntry = {
-            month,
-            year,
-            targetAmount: newTarget,
-            updatedAt: now
-        };
 
-        const result = await groupModel.updateOne(
-            { _id },
-            {
-                $set: { monthlyTarget: newTarget },
-                $push: { monthlyTargetHistory: targetEntry }
-            }
-        )
-        return result
+        const group = await groupModel.findById(_id);
+        if (!group) return { success: false, message: 'Group not found' };
+        const existingIndex = group.monthlyTargetHistory?.findIndex(entry => entry.month === month && entry.year === year);
+        const updateOps = {
+            $set: { monthlyTarget: newTarget }
+        };
+        if (existingIndex !== -1) {
+            const updatePath = `monthlyTargetHistory.${existingIndex}`;
+            updateOps.$set[updatePath] = {
+                month,
+                year,
+                targetAmount: newTarget,
+                updatedAt: now
+            };
+        } else {
+            updateOps.$push = {
+                monthlyTargetHistory: {
+                    month,
+                    year,
+                    targetAmount: newTarget,
+                    updatedAt: now
+                }
+            };
+        }
+
+        const result = await groupModel.updateOne({ _id }, updateOps);
+        return { success: true, message: existingIndex !== -1 ? 'Target updated for existing month/year' : 'Target added for new month/year', result };
     } catch (error) {
         console.error('Service File Error:', error);
         return { success: false, message: 'Internal server error', error };
     }
-}
+};
+
 
 module.exports.delete = async (req, _id, status) => {
     try {
