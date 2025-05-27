@@ -103,22 +103,7 @@ module.exports.getNotification = async (req, res) => {
         response.catchError(res, 'Catch Error In getAllData', error.message)
     }
 }
-module.exports.groupOverview = async (req, res) => {
-    try {
-        const { status, groupId } = req.query
-        const userId = req.userId
-        const mainFilter = {
-            ...({ status: status ? status : { $ne: 'Deleted' } }),
-            ...(groupId ? { groupId: new ObjectId(groupId) } : {})
-        }
-        const data = await groupMemberService.groupOverview(mainFilter)
-        response.successResponse(res, 'Group Overview Fetch SuccesFully', data)
 
-    } catch (error) {
-        console.error('Controller GetAllData Error:', error);
-        response.catchError(res, 'Catch Error In getAllData', error.message)
-    }
-}
 module.exports.update = async (req, res) => {
     try {
         const { _id, ...updateData } = req.body

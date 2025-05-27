@@ -352,6 +352,141 @@ module.exports.getAllData = async (mainFilter) => {
     }
 }
 
+module.exports.groupOverview = async (mainFilter) => {
+    try {
+        const monthNames = [
+            "January", "February", "March", "April", "May", "June",
+            "July", "August", "September", "October", "November", "December"
+        ];
+
+        const currentDate = new Date();
+        const currentMonth = currentDate.getMonth();
+        const currentMonthName = monthNames[currentMonth];
+        const currentYear = currentDate.getFullYear();
+
+        const aggregateQuery = [
+            { $match: mainFilter },
+            {
+                $lookup: {
+                    from: "group_members",
+                    localField: "_id",
+                    foreignField: "groupId",
+                    as: "groupMembers"
+                }
+            },
+            {
+                $lookup: {
+                    from: "group_transactions",
+                    localField: "_id",
+                    foreignField: "groupId",
+                    as: "groupTransactions"
+                }
+            },
+            {
+                $addFields: {
+                    acceptMembers: {
+                        $filter: {
+                            input: "$groupMembers",
+                            as: "member",
+                            cond: {
+                                $eq: ["$$member.inviteStatus", "Accepted"]
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                $addFields: {
+                    totalMembers: { $size: "$acceptMembers" },
+                    balance: { $add: [{ $sum: "$groupTransactions.amount" }, "$existTotalAmount"] },
+                    groupTransactionsInMonth: {
+                        $filter: {
+                            input: "$groupTransactions",
+                            as: "tran",
+                            cond: {
+                                $and: [
+                                    { $eq: [{ $month: "$$tran.investmentDate" }, currentMonth + 1] },
+                                    { $eq: [{ $year: "$$tran.investmentDate" }, currentYear] }
+                                ]
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                $addFields: {
+                    collectedAmount: { $sum: "$groupTransactionsInMonth.amount" },
+                    currentTargetEntry: {
+                        $first: {
+                            $filter: {
+                                input: "$monthlyTargetHistory",
+                                as: "target",
+                                cond: {
+                                    $and: [
+                                        { $eq: ["$$target.month", currentMonthName] },
+                                        { $eq: ["$$target.year", currentYear] }
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                $addFields: {
+                    targetAmount: {
+                        $multiply: [
+                            { $ifNull: ["$totalMembers", 0] },
+                            { $ifNull: ["$currentTargetEntry.targetAmount", 0] }
+                        ]
+                    }
+                }
+            },
+            {
+                $addFields: {
+                    pendingAmount: {
+                        $subtract: [
+                            { $ifNull: ["$targetAmount", 0] },
+                            { $ifNull: ["$collectedAmount", 0] }
+                        ]
+                    }
+                }
+            },
+            {
+                $project: {
+                    summaryCarts: [
+                        {
+                            title: "Balance",
+                            value: "$balance"
+                        },
+                        {
+                            title: "Target Amount",
+                            value: "$targetAmount"
+                        },
+                        {
+                            title: "Collected Amount",
+                            value: "$collectedAmount"
+                        },
+                        {
+                            title: "Pending Amount",
+                            value: "$pendingAmount"
+                        }
+                    ]
+                }
+            }
+        ];
+
+        const queryResult = await groupModel.aggregate(aggregateQuery);
+
+        return queryResult;
+    } catch (error) {
+        console.error('Service File Error:', error);
+        return { success: false, message: 'Internal server error', error };
+    }
+};
+
+
+
 module.exports.dashBoard = async (mainFilter) => {
     try {
         const aggregateQuery = [

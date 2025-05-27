@@ -27,6 +27,10 @@ const getAllData = Joi.object({
     groupId: Joi.string().length(24).optional()
 })
 
+const groupOverview = Joi.object({
+    groupId: Joi.string().length(24).required()
+})
+
 const update = Joi.object({
     _id: Joi.string().length(24).required(),
     groupName: Joi.string().min(1).max(30).optional(),
@@ -48,6 +52,7 @@ const updateStatus = Joi.object({
 module.exports = {
     create: validateBody(create),
     getAllData: validateQuery(getAllData),
+    groupOverview: validateQuery(groupOverview),
     update: validateBody(update),
     updateMonthlyTarget: validateBody(updateMonthlyTarget),
     updateStatus: validateBody(updateStatus)

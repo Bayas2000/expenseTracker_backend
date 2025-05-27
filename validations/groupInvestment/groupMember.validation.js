@@ -20,10 +20,6 @@ const memberAmountDetails = Joi.object({
     groupId: Joi.string().length(24).required()
 })
 
-const groupOverview = Joi.object({
-    groupId: Joi.string().length(24).required()
-})
-
 const update = Joi.object({
     _id: Joi.string().length(24).required(),
     groupId: Joi.string().length(24).optional(),
@@ -44,7 +40,6 @@ module.exports = {
     inviteResponse: validateBody(inviteResponse),
     getAllData: validateQuery(getAllData),
     memberAmountDetails: validateQuery(memberAmountDetails),
-    groupOverview: validateQuery(groupOverview),
     update: validateBody(update),
     updateStatus: validateBody(updateStatus)
 };

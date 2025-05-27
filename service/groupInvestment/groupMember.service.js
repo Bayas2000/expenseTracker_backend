@@ -273,76 +273,7 @@ module.exports.getNotifications = async (req, mainFilter) => {
         return { success: false, message: 'Internal server error', error };
     }
 }
-module.exports.groupOverview = async (mainFilter) => {
-    try {
-        const aggregateQuery = [
-            { $match: mainFilter },
-            {
-                $lookup: {
-                    from: "groups",
-                    localField: "groupId",
-                    foreignField: "_id",
-                    as: "groupDetails"
-                }
-            },
-            {
-                $lookup: {
-                    from: "group_transactions",
-                    localField: "_id",
-                    foreignField: "memberId",
-                    as: "transactionsDetails"
-                }
-            },
-            {
-                $addFields: {
-                    monthlyTarget: {
-                        $sum: "$monthlyTarget"
-                    }
-                }
-            },
-            {
-                $addFields: {
-                    totalAmountSpending: {
-                        $sum: "$transactionsDetails.amount"
-                    }
-                }
-            },
-            {
-                $addFields: {
-                    pendingAmount: {
-                        $subtract: [
-                            "$monthlyTarget",
-                            "$totalAmountSpending"
-                        ]
-                    }
-                }
-            },
-            {
-                $addFields: {
-                    groupName: {
-                        $first: "$groupDetails.groupName"
-                    }
-                }
-            },
-            {
-                $group: {
-                    _id: "$groupId",
-                    groupName: { $first: "$groupName" },
-                    collectedAmount: {
-                        $sum: "$totalAmountSpending"
-                    },
-                    targetAmount: { $sum: "$monthlyTarget" },
-                    pendingAmount: { $sum: "$pendingAmount" }
-                }
-            }
-        ]
-        const queryResult = await groupMemberModel.aggregate(aggregateQuery)
-        return queryResult
-    } catch (error) {
-        console.error('Service File Error:', error);
-        return { success: false, message: 'Internal server error', error };
-    }
-}
+
 module.exports.update = async (req, _id, updateData) => {
     try {
         const afterUpdate = await groupMemberModel.findByIdAndUpdate(_id, {
