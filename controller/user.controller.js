@@ -36,7 +36,7 @@ module.exports.login = async (req, res) => {
                 res.cookie("token", token, {
                     httpOnly: true,
                     secure: true,
-                    sameSite: "Lax",
+                    sameSite: "None",
                     expires: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000)
                 });
 
