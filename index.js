@@ -15,7 +15,7 @@ const app = express()
 const PORT = process.env.PORT
 
 app.use(cors({
-    origin: '*',       // allow your React dev server
+    origin: 'https://group-investmate001.vercel.app',       // allow your React dev server
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     credentials: true
 }))
@@ -25,6 +25,12 @@ app.use(express.json({ limit: '50mb' }))
 app.use(express.urlencoded({ limit: '10mb', extended: true }))
 app.use(cookieParser());
 app.use('/files', express.static(path.join(__dirname, 'uploads')));
+
+
+app.get("/", (req, res) => {
+    res.send("Expense Tracker Backend is running.");
+});
+
 
 initiateRoute(app)
 
