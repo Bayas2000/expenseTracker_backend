@@ -15,7 +15,7 @@ const app = express()
 const PORT = process.env.PORT
 
 app.use(cors({
-    origin: 'https://expense-tracker-cjpv6syur-bayas2000s-projects.vercel.app',       // allow your React dev server
+    origin: 'https://group-investmate001.vercel.app',       // allow your React dev server
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     credentials: true
 }))
