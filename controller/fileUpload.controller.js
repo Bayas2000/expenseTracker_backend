@@ -13,7 +13,7 @@ const uplodFile = async (req, res) => {
             if (parts[0] === 'uploads') parts.shift();
             const suffixUrl = parts.join('/');
 
-            const domain = `http://localhost:${PORT}/files`;
+            const domain = `https://expensetracker-backend-1-npwu.onrender.com/files`;
             const imageFullUrl = `${domain}/${suffixUrl}`;
 
             response.successResponse(res, 'File uploaded successfully', imageFullUrl);
