@@ -231,8 +231,17 @@ module.exports.setBudgetOfExpenseGraph = async (req, res) => {
         const budgetData = await transactionService.getBudget(userId, month, year);
 
         if (!budgetData) {
-            return response.errorResponse(res, 'No budget set for this month');
+            return response.successResponse(res, 'No budget set for this month', {
+                expenseTargetAmount: 0,
+                month,
+                year,
+                monthOfNumber: parseInt(month),
+                safeExpenseLimit: 0,
+                totalDaysInMonth: 0,
+                expense: []
+            });
         }
+
 
         const monthNumber = budgetData.monthOfNumber;
         const paddedMonth = monthNumber.toString().padStart(2, '0');

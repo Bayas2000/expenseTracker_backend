@@ -14,9 +14,16 @@ const login = Joi.object({
     password: Joi.string().required()
 })
 
+const updateProfile = Joi.object({
+    userName: Joi.string().min(3).max(30).required(),
+    profileImage: Joi.string(),
+
+});
+
 
 
 module.exports = {
     signup: validateBody(signup),
-    login: validateBody(login)
+    login: validateBody(login),
+    updateProfile: validateBody(updateProfile)
 };

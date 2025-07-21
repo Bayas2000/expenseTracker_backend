@@ -14,11 +14,29 @@ require('./routes/goldPrice.routes');
 const app = express()
 const PORT = process.env.PORT
 
+const allowedOrigins = [
+    'http://localhost:5173',
+    'https://group-investmate001.vercel.app'
+];
+
 app.use(cors({
-    origin: 'https://group-investmate001.vercel.app',       // allow your React dev server
+    origin: function (origin, callback) {
+        if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     credentials: true
-}))
+}));
+
+
+// app.use(cors({
+//     origin: 'https://group-investmate001.vercel.app',       // allow your React dev server
+//     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+//     credentials: true
+// }))
 
 app.use(morgan('dev'))
 app.use(express.json({ limit: '50mb' }))

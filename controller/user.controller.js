@@ -79,7 +79,17 @@ module.exports.logOut = async (req, res) => {
     }
 }
 
-
-
+module.exports.updateProfile = async (req, res) => {
+    try {
+        const { ...updatedData } = req.body
+        const userId = req.userId
+        const result = await userService.updateProfile(userId, updatedData)
+        if (result) return response.successResponse(res, "Your Profile Updated SuccessFully")
+        else return response.errorResponse(res, "updatations failed...")
+    } catch (error) {
+        console.error('Controller profile Error:', error);
+        response.catchError(res, 'Catch Error In profile', error.message)
+    }
+}
 
 

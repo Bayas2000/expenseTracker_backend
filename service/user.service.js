@@ -38,3 +38,19 @@ module.exports.userDetails = async (userId) => {
     const user = await userModel.findOne({ _id: userId }).select('-password')
     return user
 }
+
+
+module.exports.updateProfile = async (userId, updatedData) => {
+    try {
+        const user = await userModel.findByIdAndUpdate(userId, {
+            ...updatedData,
+            updatedAt: new Date()
+        })
+        return user
+
+    } catch (error) {
+        console.error('updateProfile Error:', error);
+        return { success: false, message: 'Internal server error', error };
+    }
+
+}
