@@ -68,19 +68,21 @@ const sendPushNotification = async (deviceToken, title, body) => {
   const message = {
     notification: {
       title,
-      body
+      body,
     },
-    token: deviceToken
-  }
+    token: deviceToken,
+  };
+
   try {
-    const response = await admin.messaging().send(message)
-    console.log("send push notification", response)
-    return response
+    const response = await admin.messaging().send(message);
+    console.log("send push notification", response);
+    return response;
   } catch (error) {
     console.error('Error sending notification:', error);
   }
+};
 
-}
+
 
 
 module.exports = {

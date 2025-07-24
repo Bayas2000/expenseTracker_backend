@@ -1,5 +1,4 @@
-const admin = require("firebase-admin")
-// const serviceAccount = require("../constant/expense-tracker-9eb29-firebase-adminsdk-fbsvc-72a4340dc8.json")
+const admin = require("firebase-admin");
 require('dotenv').config();
 
 admin.initializeApp({
@@ -10,4 +9,4 @@ admin.initializeApp({
     }),
 });
 
-module.exports = admin
+module.exports = { admin }; 
