@@ -100,13 +100,35 @@ module.exports.getNotification = async (req, res) => {
     try {
         const { status } = req.query
         const userId = req.userId
+        const user = await userModel.findById(userId).select('deviceToken');
+
         const mainFilter = {
             ...({ status: status ? status : { $ne: 'Deleted' } }),
             ...(userId ? { userId: new ObjectId(userId) } : {})
 
         }
         const data = await groupMemberService.getNotifications(req, mainFilter)
-        response.successResponse(res, 'Group Member Data List Fetch SuccesFully', data)
+        console.log(data)
+        if (data.length > 0) {
+            const hasUnreadNotification = data.some(notification => notification.readStatus === true);
+
+            if (hasUnreadNotification && user?.deviceToken) {
+                await sendPushNotification(
+                    user.deviceToken,
+                    "Notification🔔",
+                    "You have been invited to join the group 😉"
+                );
+            }
+            response.successResponse(res, 'Group Member Data List Fetch SuccesFully', data)
+        } else {
+            await sendPushNotification(
+                user.deviceToken,
+                "Notification🔔",
+                "Silre illa Pongadiiii🤡"
+            )
+            return response.successResponse(res, "No data Found", data)
+        }
+
     } catch (error) {
         console.error('Controller GetAllData Error:', error);
         response.catchError(res, 'Catch Error In getAllData', error.message)
