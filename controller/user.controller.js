@@ -25,35 +25,71 @@ module.exports.signup = async (req, res) => {
 
 module.exports.login = async (req, res) => {
     try {
-        const { ...loginData } = req.body;
-        const user = await userService.findUser(loginData.userName);
-        if (user) {
-            const isValidPassword = await user.verifyPassword(loginData.password)
-            if (isValidPassword) {
-                if (loginData.deviceToken) {
-                    loginData.deviceToken = deviceToken
-                    await user.save()
-                }
-                const token = await user.jwt()
-                //res.cookie("token", token, { expires: new Date(Date.now() + 1 * 3600000) })
-                res.cookie("token", token, {
-                    httpOnly: true,
-                    secure: true,
-                    sameSite: "None",
-                    expires: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000)
-                });
+        const { userName, password, deviceToken } = req.body;
 
-                response.successResponse(res, 'Login SuccessFully', token)
-            } else return response.errorResponse(res, 'Invalid Credentials')
-        } else {
-            return response.errorResponse(res, 'InValid Credentials')
+        const user = await userService.findUser(userName);
+        if (!user) {
+            return response.errorResponse(res, 'Invalid Credentials');
         }
+
+        const isValidPassword = await user.verifyPassword(password);
+        if (!isValidPassword) {
+            return response.errorResponse(res, 'Invalid Credentials');
+        }
+        if (deviceToken) {
+            user.deviceToken = deviceToken;
+            await user.save();
+        }
+
+        const token = await user.jwt();
+
+        res.cookie("token", token, {
+            httpOnly: true,
+            secure: true,
+            sameSite: "None",
+            expires: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000) 
+        });
+
+        response.successResponse(res, 'Login Successfully', token);
 
     } catch (error) {
         console.error('Controller Login Error:', error);
-        response.catchError(res, 'Catch Error In Login', error.message)
+        response.catchError(res, 'Catch Error In Login', error.message);
     }
-}
+};
+
+
+// module.exports.login = async (req, res) => {
+//     try {
+//         const { ...loginData } = req.body;
+//         const user = await userService.findUser(loginData.userName);
+//         if (user) {
+//             const isValidPassword = await user.verifyPassword(loginData.password)
+//             if (isValidPassword) {
+//                 if (loginData.deviceToken) {
+//                     loginData.deviceToken
+//                     await user.save()
+//                 }
+//                 const token = await user.jwt()
+//                 //res.cookie("token", token, { expires: new Date(Date.now() + 1 * 3600000) })
+//                 res.cookie("token", token, {
+//                     httpOnly: true,
+//                     secure: true,
+//                     sameSite: "None",
+//                     expires: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000)
+//                 });
+
+//                 response.successResponse(res, 'Login SuccessFully', token)
+//             } else return response.errorResponse(res, 'Invalid Credentials')
+//         } else {
+//             return response.errorResponse(res, 'InValid Credentials')
+//         }
+
+//     } catch (error) {
+//         console.error('Controller Login Error:', error);
+//         response.catchError(res, 'Catch Error In Login', error.message)
+//     }
+// }
 
 module.exports.userDetails = async (req, res) => {
     try {
