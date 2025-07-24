@@ -1,4 +1,5 @@
 const moment = require("moment");
+const { admin } = require('../functions/firebase');
 
 const getDateFilter = async (dateFilter) => {
   const currentDate = moment().startOf("day");
