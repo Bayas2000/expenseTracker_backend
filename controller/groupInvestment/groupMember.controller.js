@@ -108,10 +108,10 @@ module.exports.getNotification = async (req, res) => {
 
         }
         const data = await groupMemberService.getNotifications(req, mainFilter)
-        console.log(data)
+        console.log("data", data)
         if (data.length > 0) {
-            const hasUnreadNotification = data.some(notification => notification.readStatus === true);
-
+            const hasUnreadNotification = data.some(notification => notification.inviteStatus === "Pending");
+            console.log(hasUnreadNotification)
             if (hasUnreadNotification && user?.deviceToken) {
                 await sendPushNotification(
                     user.deviceToken,
