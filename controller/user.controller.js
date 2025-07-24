@@ -30,7 +30,7 @@ module.exports.login = async (req, res) => {
         if (user) {
             const isValidPassword = await user.verifyPassword(loginData.password)
             if (isValidPassword) {
-                if (deviceToken) {
+                if (loginData.deviceToken) {
                     loginData.deviceToken = deviceToken
                     await user.save()
                 }
