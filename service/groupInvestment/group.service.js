@@ -99,24 +99,6 @@ module.exports.getAllData = async (mainFilter) => {
             },
             {
                 $addFields: {
-                    existingInvestAmount: {
-                        $first: "$existingInvestment.investAmount"
-                    }
-                }
-            },
-            {
-                $addFields: {
-                    groupBalance: {
-                        $add: [
-
-                            { $ifNull: ["$existTotalAmount", 0] },
-                            { $ifNull: ["$existingInvestAmount", 0] }
-                        ]
-                    }
-                }
-            },
-            {
-                $addFields: {
                     totalMembers: { $size: { $ifNull: ["$acceptMembers", []] } }
                 }
             },
@@ -330,6 +312,36 @@ module.exports.getAllData = async (mainFilter) => {
                                 createdBy: "$$member.createdBy"
                             }
                         }
+                    }
+                }
+            },
+            {
+                $addFields: {
+                    totalTransactionAmount: {
+                        $reduce: {
+                            input: "$groupDetails",
+                            initialValue: 0,
+                            in: { $add: ["$$value", { $ifNull: ["$$this.memberAmount", 0] }] }
+                        }
+                    }
+                }
+            },
+            {
+                $addFields: {
+                    existingInvestAmount: {
+                        $first: "$existingInvestment.investAmount"
+                    }
+                }
+            },
+            {
+                $addFields: {
+                    groupBalance: {
+                        $add: [
+
+                            { $ifNull: ["$existTotalAmount", 0] },
+                            { $ifNull: ["$existingInvestAmount", 0] },
+                            { $ifNull: ["$totalTransactionAmount", 0] }
+                        ]
                     }
                 }
             },

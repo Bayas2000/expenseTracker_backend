@@ -1,4 +1,6 @@
+const { sendPushNotification } = require('../../helper/commonFunctions')
 const response = require('../../helper/response')
+const userModel = require('../../models/user.model')
 const groupMemberService = require('../../service/groupInvestment/groupMember.service')
 const mongoose = require('mongoose')
 const { Types } = mongoose
@@ -44,6 +46,13 @@ module.exports.respondToGroupInvite = async (req, res) => {
 
         if (member.inviteStatus !== 'Pending') {
             return response.successResponse(res, `You have already responded: ${member.inviteStatus}`);
+        }
+
+        const user = await userModel.findById(userId).select('deviceToken');
+        if (user?.deviceToken) {
+            const title = 'Group Invite Request';
+            const body = `You have a group invite request to respond to.`;
+            await sendPushNotification(user.deviceToken, title, body);
         }
 
         const result = await groupMemberService.respondToGroupInvite(groupId, userId, inviteResponse);
