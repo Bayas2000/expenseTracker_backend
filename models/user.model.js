@@ -19,6 +19,9 @@ const userSchema = new mongoose.Schema({
     profileImage: {
         type: String,
     },
+    deviceToken: {
+        type: String
+    },
     createdAt: {
         type: Date,
         required: true

@@ -11,7 +11,8 @@ const signup = Joi.object({
 
 const login = Joi.object({
     userName: Joi.string().required(),
-    password: Joi.string().required()
+    password: Joi.string().required(),
+    deviceToken: Joi.string()
 })
 
 const updateProfile = Joi.object({

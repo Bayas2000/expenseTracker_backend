@@ -26,11 +26,14 @@ module.exports.signup = async (req, res) => {
 module.exports.login = async (req, res) => {
     try {
         const { ...loginData } = req.body;
-        console.log("loginData", loginData)
         const user = await userService.findUser(loginData.userName);
         if (user) {
             const isValidPassword = await user.verifyPassword(loginData.password)
             if (isValidPassword) {
+                if (deviceToken) {
+                    loginData.deviceToken = deviceToken
+                    await user.save()
+                }
                 const token = await user.jwt()
                 //res.cookie("token", token, { expires: new Date(Date.now() + 1 * 3600000) })
                 res.cookie("token", token, {
